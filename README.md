@@ -1,6 +1,9 @@
 # EasyOCR MCP Server
 
-A Model Context Protocol (MCP) server that provides OCR capabilities using EasyOCR library.
+A Model Context Protocol (MCP) server that provides OCR capabilities using the [EasyOCR](https://github.com/JaidedAI/EasyOCR) library.
+
+> **About EasyOCR:**  
+> [EasyOCR](https://github.com/JaidedAI/EasyOCR) is an open-source Optical Character Recognition (OCR) library developed by JaidedAI. It supports over 80 languages, offers GPU acceleration, and is known for its ease of use and high accuracy. EasyOCR can extract text from images, scanned documents, and photos, making it suitable for a wide range of OCR tasks. For more details, visit the [EasyOCR GitHub repository](https://github.com/JaidedAI/EasyOCR).
 
 ## Features
 
@@ -13,13 +16,14 @@ A Model Context Protocol (MCP) server that provides OCR capabilities using EasyO
 ## Installation
 
 ```bash
-# Install PyTorch (for GPU support, adjust based on your system)
+# Install PyTorch with GPU support. Skip this step if you plan to use CPU only.
+# For GPU support, adjust the command based on your system. For details, see: https://pytorch.org/get-started/locally/
 uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 
-# Install dependencies
+# Install all dependencies
 uv sync
 
-# Test the implementation
+# Run tests to verify the implementation
 uv run test.py
 uv run test-gpu.py
 ```
