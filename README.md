@@ -80,12 +80,12 @@ If you are running this as a server for a parent MCP application, you can config
       "command": "uv",
       "args": [
         "--directory",
-        "C:\\path\\to\\your\\project\\easyocr-mcp",
+        "X:\\path\\to\\your\\project\\easyocr-mcp",
         "run",
         "easyocr-mcp.py"
       ],
       "env": {
-        "EASYOCR_LANGUAGES": "en,ch_sim,ja"
+        "EASYOCR_LANGUAGES": "en,ch_tra,ja"
       }
     }
   }
@@ -105,7 +105,7 @@ If you are running this as a server for a parent MCP application, you can config
         "easyocr-mcp.py"
       ],
       "env": {
-        "EASYOCR_LANGUAGES": "en,ch_sim,ja"
+        "EASYOCR_LANGUAGES": "en,ch_tra,ja"
       }
     }
   }

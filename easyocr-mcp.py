@@ -129,7 +129,7 @@ def ocr_image_file(
     Performs OCR on an image file using EasyOCR.
     
     Args:
-        image_path: Path to the image file
+        image_path: Path to the image file (full path)
         detail: 0 for text only, 1 for full details with coordinates and confidence
         paragraph: Enable paragraph detection
         width_ths: Text width threshold for merging
