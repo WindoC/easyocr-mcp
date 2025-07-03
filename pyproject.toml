@@ -1,0 +1,13 @@
+[project]
+name = "easyocr-test"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "easyocr>=1.7.2",
+    "pillow>=8.0.0",
+    "requests>=2.25.0",
+    "numpy>=1.21.0",
+    "mcp"
+]
