@@ -8,6 +8,10 @@ import base64
 # Import the functions directly from the module file
 import sys
 import os
+
+# Set environment variable for testing
+os.environ['EASYOCR_LANGUAGES'] = 'en'
+
 sys.path.append(os.path.dirname(__file__))
 
 # Import from easyocr-mcp.py (need to handle the dash in filename)
@@ -24,7 +28,7 @@ def test_file_ocr():
     """Test OCR on a local file"""
     print("Testing OCR on local file...")
     try:
-        result = ocr_image_file("test.png", languages=['en'], detail=1)
+        result = ocr_image_file("test.png", detail=1)
         print(f"File OCR result: {result}")
         return True
     except Exception as e:
@@ -40,7 +44,7 @@ def test_base64_ocr():
             image_bytes = f.read()
         base64_image = base64.b64encode(image_bytes).decode('utf-8')
         
-        result = ocr_image_base64(base64_image, languages=['en'], detail=1)
+        result = ocr_image_base64(base64_image, detail=1)
         print(f"Base64 OCR result: {result}")
         return True
     except Exception as e:
@@ -53,7 +57,7 @@ def test_url_ocr():
     try:
         # Use a simple test image URL - skip if network issues
         test_url = "https://geekyants.com/_next/image?url=https%3A%2F%2Fstatic-cdn.geekyants.com%2Farticleblogcomponent%2F22981%2F2023-10-17%2F381813330-1697540509.png&w=3840&q=75"
-        result = ocr_image_url(test_url, languages=['en'], detail=1)
+        result = ocr_image_url(test_url, detail=1)
         print(f"URL OCR result: {result}")
         return True
     except Exception as e:
@@ -69,11 +73,11 @@ def test_different_detail_levels():
     print("\nTesting different detail levels...")
     try:
         # Test detail=0 (text only)
-        result_0 = ocr_image_file("test.png", languages=['en'], detail=0)
+        result_0 = ocr_image_file("test.png", detail=0)
         print(f"Detail=0 result: {result_0}")
         
         # Test detail=1 (full details)
-        result_1 = ocr_image_file("test.png", languages=['en'], detail=1)
+        result_1 = ocr_image_file("test.png", detail=1)
         print(f"Detail=1 result: {result_1}")
         
         return True

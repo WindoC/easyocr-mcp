@@ -176,7 +176,6 @@ def ocr_image_file(
 @mcp.tool(title="OCR Image from URL")
 def ocr_image_url(
     image_url: str,
-    languages: list[str] = ['en'],
     detail: int = 1,
     paragraph: bool = False,
     width_ths: float = 0.7,
@@ -187,7 +186,6 @@ def ocr_image_url(
     
     Args:
         image_url: URL of the image to process
-        languages: List of language codes (e.g., ['en', 'ch_sim'])
         detail: 0 for text only, 1 for full details with coordinates and confidence
         paragraph: Enable paragraph detection
         width_ths: Text width threshold for merging
@@ -210,7 +208,8 @@ def ocr_image_url(
         # Validate image format
         validate_image_bytes(image_bytes)
 
-        # Get EasyOCR reader for specified languages
+        # Get EasyOCR reader for languages from environment
+        languages = get_default_languages()
         reader = get_reader(languages)
 
         # Convert bytes to numpy array for EasyOCR
