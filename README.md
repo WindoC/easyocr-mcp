@@ -34,14 +34,14 @@ uv run test-gpu.py
 
 ### Parameters
 
-- `languages`: List of language codes (default: `['en']`)
-  - Examples: `['en']`, `['ch_sim', 'en']`, `['ja', 'ko']`
 - `detail`: Output detail level (default: `1`)
   - `0`: Text only - `['text1', 'text2', ...]`
   - `1`: Full details - `[([[x1,y1], [x2,y2], [x3,y3], [x4,y4]], 'text', confidence), ...]`
 - `paragraph`: Enable paragraph detection (default: `false`)
 - `width_ths`: Text width threshold for merging (default: `0.7`)
 - `height_ths`: Text height threshold for merging (default: `0.7`)
+
+**Note**: Language selection is configured via the `EASYOCR_LANGUAGES` environment variable in your MCP configuration (see Configuration section below).
 
 ### Example Output
 
@@ -67,6 +67,55 @@ uv run easyocr-mcp.py
 # Or use mcp command
 mcp run easyocr-mcp.py
 ```
+
+## MCP Configuration Example
+
+If you are running this as a server for a parent MCP application, you can configure it in your main MCP `config.json`.
+
+**Windows Example:**
+```json
+{
+  "mcpServers": {
+    "easyocr-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:\\path\\to\\your\\project\\easyocr-mcp",
+        "run",
+        "easyocr-mcp.py"
+      ],
+      "env": {
+        "EASYOCR_LANGUAGES": "en,ch_sim,ja"
+      }
+    }
+  }
+}
+```
+
+**Linux/macOS Example:**
+```json
+{
+  "mcpServers": {
+    "easyocr-mcp": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/path/to/your/project/easyocr-mcp",
+        "run",
+        "easyocr-mcp.py"
+      ],
+      "env": {
+        "EASYOCR_LANGUAGES": "en,ch_sim,ja"
+      }
+    }
+  }
+}
+```
+
+### Environment Variables
+
+- `EASYOCR_LANGUAGES`: Comma-separated list of language codes (default: `en`)
+  - Examples: `en`, `en,ch_sim`, `ja,ko,en`
 
 ## Supported Languages
 
