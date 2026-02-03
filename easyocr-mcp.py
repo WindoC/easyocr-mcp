@@ -4,6 +4,9 @@ import io
 import requests
 from PIL import Image as PILImage
 from mcp.server.fastmcp import FastMCP
+import time
+from typing import Optional
+import threading
 import easyocr
 
 # Create an MCP server
@@ -11,12 +14,62 @@ mcp = FastMCP("EasyOCR")
 
 # Reader cache for performance optimization
 _reader_cache = {}
+_last_used: Optional[float] = None
+_unload_thread_started = False
+
+DEFAULT_UNLOAD_TIMEOUT_SECONDS = 300
+UNLOAD_POLL_SECONDS = 10
 
 # Get default languages from environment variable
 def get_default_languages() -> list[str]:
     """Get default languages from EASYOCR_LANGUAGES environment variable."""
     env_languages = os.getenv('EASYOCR_LANGUAGES', 'en')
     return [lang.strip() for lang in env_languages.split(',')]
+
+def _get_unload_timeout_seconds() -> int:
+    """Get unload timeout seconds from EASYOCR_UNLOAD_TIMEOUT environment variable."""
+    raw_value = os.getenv("EASYOCR_UNLOAD_TIMEOUT", str(DEFAULT_UNLOAD_TIMEOUT_SECONDS))
+    try:
+        value = int(raw_value)
+    except ValueError:
+        return 0
+    if value < 0:
+        return 0
+    return value
+
+def _parse_bool_env(env_name: str, default: bool) -> bool:
+    value = os.getenv(env_name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+def _get_unload_jobdone_default() -> bool:
+    return _parse_bool_env("UNLOAD_JOBDONE", False)
+
+def _clear_reader_cache() -> None:
+    global _last_used
+    _reader_cache.clear()
+    _last_used = None
+
+def _unload_watcher_loop() -> None:
+    global _last_used, _unload_thread_started
+    while True:
+        if not _reader_cache and _last_used is None:
+            _unload_thread_started = False
+            return
+        timeout_seconds = _get_unload_timeout_seconds()
+        if timeout_seconds > 0 and _last_used is not None:
+            if time.time() - _last_used >= timeout_seconds:
+                _clear_reader_cache()
+        time.sleep(UNLOAD_POLL_SECONDS)
+
+def _start_unload_watcher() -> None:
+    global _unload_thread_started
+    if _unload_thread_started:
+        return
+    thread = threading.Thread(target=_unload_watcher_loop, daemon=True)
+    thread.start()
+    _unload_thread_started = True
 
 def get_reader(languages: list[str]) -> easyocr.Reader:
     """
@@ -33,7 +86,14 @@ def get_reader(languages: list[str]) -> easyocr.Reader:
         except Exception as e:
             raise ValueError(f"Failed to create EasyOCR reader for languages {languages}: {str(e)}")
     
+    global _last_used
+    _last_used = time.time()
     return _reader_cache[cache_key]
+
+def _resolve_unload_jobdone(unload_jobdone: Optional[bool]) -> bool:
+    if unload_jobdone is None:
+        return _get_unload_jobdone_default()
+    return bool(unload_jobdone)
 
 def validate_image_bytes(image_bytes: bytes) -> None:
     """
@@ -59,7 +119,8 @@ def ocr_image_base64(
     detail: int = 1,
     paragraph: bool = False,
     width_ths: float = 0.7,
-    height_ths: float = 0.7
+    height_ths: float = 0.7,
+    unload_jobdone: Optional[bool] = None
 ) -> list:
     """
     Performs OCR on a base64 encoded image using EasyOCR.
@@ -70,6 +131,7 @@ def ocr_image_base64(
         paragraph: Enable paragraph detection
         width_ths: Text width threshold for merging
         height_ths: Text height threshold for merging
+        unload_jobdone: If true, unload models immediately after this OCR call
     
     Returns:
         EasyOCR native output format:
@@ -89,6 +151,7 @@ def ocr_image_base64(
         # Get EasyOCR reader for languages from environment
         languages = get_default_languages()
         reader = get_reader(languages)
+        _start_unload_watcher()
 
         # Convert bytes to numpy array for EasyOCR
         import numpy as np
@@ -111,6 +174,8 @@ def ocr_image_base64(
             height_ths=height_ths
         )
 
+        if _resolve_unload_jobdone(unload_jobdone):
+            _clear_reader_cache()
         return result
 
     except Exception as e:
@@ -123,7 +188,8 @@ def ocr_image_file(
     detail: int = 1,
     paragraph: bool = False,
     width_ths: float = 0.7,
-    height_ths: float = 0.7
+    height_ths: float = 0.7,
+    unload_jobdone: Optional[bool] = None
 ) -> list:
     """
     Performs OCR on an image file using EasyOCR.
@@ -134,6 +200,7 @@ def ocr_image_file(
         paragraph: Enable paragraph detection
         width_ths: Text width threshold for merging
         height_ths: Text height threshold for merging
+        unload_jobdone: If true, unload models immediately after this OCR call
     
     Returns:
         EasyOCR native output format:
@@ -155,6 +222,7 @@ def ocr_image_file(
         # Get EasyOCR reader for languages from environment
         languages = get_default_languages()
         reader = get_reader(languages)
+        _start_unload_watcher()
 
         # Perform OCR directly on file path (EasyOCR can handle file paths)
         result = reader.readtext(
@@ -165,6 +233,8 @@ def ocr_image_file(
             height_ths=height_ths
         )
 
+        if _resolve_unload_jobdone(unload_jobdone):
+            _clear_reader_cache()
         return result
     
     except FileNotFoundError as e:
@@ -179,7 +249,8 @@ def ocr_image_url(
     detail: int = 1,
     paragraph: bool = False,
     width_ths: float = 0.7,
-    height_ths: float = 0.7
+    height_ths: float = 0.7,
+    unload_jobdone: Optional[bool] = None
 ) -> list:
     """
     Performs OCR on an image from a URL using EasyOCR.
@@ -190,6 +261,7 @@ def ocr_image_url(
         paragraph: Enable paragraph detection
         width_ths: Text width threshold for merging
         height_ths: Text height threshold for merging
+        unload_jobdone: If true, unload models immediately after this OCR call
     
     Returns:
         EasyOCR native output format:
@@ -211,6 +283,7 @@ def ocr_image_url(
         # Get EasyOCR reader for languages from environment
         languages = get_default_languages()
         reader = get_reader(languages)
+        _start_unload_watcher()
 
         # Convert bytes to numpy array for EasyOCR
         import numpy as np
@@ -232,10 +305,20 @@ def ocr_image_url(
             height_ths=height_ths
         )
 
+        if _resolve_unload_jobdone(unload_jobdone):
+            _clear_reader_cache()
         return result
 
     except Exception as e:
         raise ValueError(f"Error performing OCR: {str(e)}")
+
+@mcp.tool(title="Unload OCR Models")
+def unload_ocr_models() -> dict:
+    """
+    Unload cached OCR models to free memory.
+    """
+    _clear_reader_cache()
+    return {"status": "unloaded"}
 
 if __name__ == "__main__":
     mcp.run()
