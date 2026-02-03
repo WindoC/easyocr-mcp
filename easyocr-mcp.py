@@ -131,7 +131,7 @@ def ocr_image_base64(
         paragraph: Enable paragraph detection
         width_ths: Text width threshold for merging
         height_ths: Text height threshold for merging
-        unload_jobdone: If true, unload models immediately after this OCR call
+        unload_jobdone: (Optional, default false) If true, unload models immediately after this OCR call
     
     Returns:
         EasyOCR native output format:
@@ -200,7 +200,7 @@ def ocr_image_file(
         paragraph: Enable paragraph detection
         width_ths: Text width threshold for merging
         height_ths: Text height threshold for merging
-        unload_jobdone: If true, unload models immediately after this OCR call
+        unload_jobdone: (Optional, default false) If true, unload models immediately after this OCR call
     
     Returns:
         EasyOCR native output format:
@@ -261,7 +261,7 @@ def ocr_image_url(
         paragraph: Enable paragraph detection
         width_ths: Text width threshold for merging
         height_ths: Text height threshold for merging
-        unload_jobdone: If true, unload models immediately after this OCR call
+        unload_jobdone: (Optional, default false) If true, unload models immediately after this OCR call
     
     Returns:
         EasyOCR native output format:
