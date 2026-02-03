@@ -11,6 +11,8 @@ import os
 
 # Set environment variable for testing
 os.environ['EASYOCR_LANGUAGES'] = 'en'
+os.environ.setdefault('EASYOCR_UNLOAD_TIMEOUT', '300')
+os.environ.setdefault('UNLOAD_JOBDONE', 'false')
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -23,6 +25,7 @@ spec.loader.exec_module(easyocr_mcp)
 ocr_image_base64 = easyocr_mcp.ocr_image_base64
 ocr_image_file = easyocr_mcp.ocr_image_file
 ocr_image_url = easyocr_mcp.ocr_image_url
+unload_ocr_models = easyocr_mcp.unload_ocr_models
 
 def test_file_ocr():
     """Test OCR on a local file"""
@@ -85,6 +88,29 @@ def test_different_detail_levels():
         print(f"Detail level test failed: {e}")
         return False
 
+def test_unload_jobdone():
+    """Test per-call unload_jobdone behavior"""
+    print("\nTesting unload_jobdone...")
+    try:
+        result = ocr_image_file("test.png", detail=1, unload_jobdone=True)
+        print(f"OCR result with unload_jobdone: {result}")
+        return True
+    except Exception as e:
+        print(f"unload_jobdone test failed: {e}")
+        return False
+
+def test_manual_unload():
+    """Test manual unload tool"""
+    print("\nTesting manual unload tool...")
+    try:
+        _ = ocr_image_file("test.png", detail=1)
+        unload_result = unload_ocr_models()
+        print(f"Unload result: {unload_result}")
+        return True
+    except Exception as e:
+        print(f"Manual unload test failed: {e}")
+        return False
+
 def main():
     """Run all tests"""
     print("🧪 Testing EasyOCR MCP Tools")
@@ -94,7 +120,9 @@ def main():
         test_file_ocr,
         test_base64_ocr,
         test_url_ocr,
-        test_different_detail_levels
+        test_different_detail_levels,
+        test_unload_jobdone,
+        test_manual_unload
     ]
     
     passed = 0
