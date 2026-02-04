@@ -8,6 +8,7 @@ import time
 from typing import Optional
 import threading
 import easyocr
+import gc
 
 # Create an MCP server
 mcp = FastMCP("EasyOCR")
@@ -50,6 +51,7 @@ def _clear_reader_cache() -> None:
     global _last_used
     _reader_cache.clear()
     _last_used = None
+    gc.collect()
 
 def _unload_watcher_loop() -> None:
     global _last_used, _unload_thread_started
