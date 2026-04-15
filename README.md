@@ -11,6 +11,7 @@ A Model Context Protocol (MCP) server that provides OCR capabilities using the [
 - **Multi-language Support**: Support for 80+ languages with dynamic selection
 - **Flexible Output**: Choose between text-only or detailed results with coordinates and confidence
 - **Performance Optimized**: Reader caching for better performance
+- **Memory Controls**: Auto-unload and per-request unload options
 - **Native EasyOCR Output**: Returns EasyOCR's original format
 
 ## Installation
@@ -97,6 +98,7 @@ This keeps the project on `uv` while targeting the existing `Python312` install.
 1. **`ocr_image_base64`** - Process base64 encoded images
 2. **`ocr_image_file`** - Process image files from disk
 3. **`ocr_image_url`** - Process images from URLs
+4. **`unload_ocr_models`** - Unload cached OCR models to free memory
 
 ### Parameters
 
@@ -106,6 +108,7 @@ This keeps the project on `uv` while targeting the existing `Python312` install.
 - `paragraph`: Enable paragraph detection (default: `false`)
 - `width_ths`: Text width threshold for merging (default: `0.7`)
 - `height_ths`: Text height threshold for merging (default: `0.7`)
+- `unload_jobdone`: Unload models immediately after this OCR call (default: from `UNLOAD_JOBDONE`)
 
 **Note**: Language selection is configured via the `EASYOCR_LANGUAGES` environment variable in your MCP configuration (see Configuration section below).
 
@@ -179,6 +182,8 @@ If you are running this as a server for a parent MCP application, you can config
 
 - `EASYOCR_LANGUAGES`: Comma-separated list of language codes (default: `en`)
   - Examples: `en`, `en,ch_sim`, `ja,ko,en`
+- `EASYOCR_UNLOAD_TIMEOUT`: Seconds of inactivity before auto-unload (default: `300`, `0` disables)
+- `UNLOAD_JOBDONE`: If `true`, unload models after each OCR call by default (default: `false`)
 
 ## Supported Languages
 
