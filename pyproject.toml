@@ -1,9 +1,9 @@
 [project]
-name = "easyocr-test"
+name = "easyocr-mcp"
 version = "0.1.0"
-description = "Add your description here"
+description = "MCP server that provides OCR tools using EasyOCR"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "easyocr>=1.7.2",
     "pillow>=8.0.0",
