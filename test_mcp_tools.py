@@ -5,9 +5,10 @@ This tests the tools directly without the MCP protocol layer.
 """
 
 import base64
-# Import the functions directly from the module file
-import sys
 import os
+import sys
+
+import torch
 
 # Set environment variable for testing
 os.environ['EASYOCR_LANGUAGES'] = 'en'
@@ -23,6 +24,25 @@ spec.loader.exec_module(easyocr_mcp)
 ocr_image_base64 = easyocr_mcp.ocr_image_base64
 ocr_image_file = easyocr_mcp.ocr_image_file
 ocr_image_url = easyocr_mcp.ocr_image_url
+
+
+def test_gpu_runtime():
+    """Validate that the current runtime sees the AMD-enabled PyTorch build."""
+    print("Testing GPU runtime...")
+    print(f"Python executable: {sys.executable}")
+    print(f"Torch version: {torch.__version__}")
+    print(f"CUDA available: {torch.cuda.is_available()}")
+    print(f"HIP version: {getattr(torch.version, 'hip', None)}")
+
+    if not torch.cuda.is_available():
+        print("GPU runtime failed: torch.cuda.is_available() is False")
+        return False
+
+    if not getattr(torch.version, "hip", None):
+        print("GPU runtime failed: expected a ROCm/HIP-enabled PyTorch build")
+        return False
+
+    return True
 
 def test_file_ocr():
     """Test OCR on a local file"""
@@ -87,10 +107,11 @@ def test_different_detail_levels():
 
 def main():
     """Run all tests"""
-    print("🧪 Testing EasyOCR MCP Tools")
+    print("Testing EasyOCR MCP Tools")
     print("=" * 50)
     
     tests = [
+        test_gpu_runtime,
         test_file_ocr,
         test_base64_ocr,
         test_url_ocr,
@@ -103,17 +124,17 @@ def main():
     for test in tests:
         if test():
             passed += 1
-            print("✅ PASSED")
+            print("PASSED")
         else:
-            print("❌ FAILED")
+            print("FAILED")
         print("-" * 30)
     
-    print(f"\n📊 Results: {passed}/{total} tests passed")
+    print(f"\nResults: {passed}/{total} tests passed")
     
     if passed == total:
-        print("🎉 All tests passed! EasyOCR MCP server is working correctly.")
+        print("All tests passed. EasyOCR MCP server is working correctly.")
     else:
-        print("⚠️  Some tests failed. Check the error messages above.")
+        print("Some tests failed. Check the error messages above.")
 
 if __name__ == "__main__":
     main()
